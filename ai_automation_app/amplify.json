@@ -1,0 +1,113 @@
+{
+  "projectName": "therastack",
+  "frontend": "javascript",
+  "javascript": {
+    "framework": "react",
+    "config": {
+      "SourceDir": "frontend",
+      "DistributionDir": "frontend/.next",
+      "BuildCommand": "cd frontend && npm run build",
+      "StartCommand": "cd frontend && npm start"
+    }
+  },
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-therastack-dev-f9371-authRole",
+      "UnauthRoleName": "amplify-therastack-dev-f9371-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::024455572180:role/amplify-therastack-dev-f9371-authRole",
+      "UnauthRoleArn": "arn:aws:iam::024455572180:role/amplify-therastack-dev-f9371-unauthRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-therastack-dev-f9371-deployment",
+      "StackName": "amplify-therastack-dev-f9371",
+      "StackId": "arn:aws:cloudformation:us-east-2:024455572180:stack/amplify-therastack-dev-f9371/c7216a40-0ff7-11f0-8b91-02e5dd09502d",
+      "AmplifyAppId": "d2k6q7tcs5akjk"
+    }
+  },
+  "auth": {
+    "therastackauth": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false,
+      "frontendAuthConfig": {
+        "socialProviders": ["GOOGLE", "APPLE"],
+        "usernameAttributes": ["EMAIL"],
+        "signupAttributes": ["EMAIL", "NAME"],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 8,
+          "passwordPolicyCharacters": ["REQUIRES_LOWERCASE", "REQUIRES_UPPERCASE", "REQUIRES_NUMBERS", "REQUIRES_SYMBOLS"]
+        },
+        "mfaConfiguration": "OFF",
+        "mfaTypes": ["SMS"],
+        "verificationMechanisms": ["EMAIL"]
+      }
+    }
+  },
+  "storage": {
+    "patientDocs": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "auth",
+          "resourceName": "therastackauth",
+          "attributes": ["UserPoolId"]
+        }
+      ]
+    },
+    "companyDocs": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "auth",
+          "resourceName": "therastackauth",
+          "attributes": ["UserPoolId"]
+        }
+      ]
+    }
+  },
+  "api": {
+    "therastackapi": {
+      "service": "AppSync",
+      "providerPlugin": "awscloudformation",
+      "output": {
+        "authConfig": {
+          "defaultAuthentication": {
+            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+            "userPoolConfig": {
+              "userPoolId": "auththerastackauth"
+            }
+          },
+          "additionalAuthenticationProviders": []
+        }
+      }
+    }
+  },
+  "function": {
+    "calendarFunction": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "auth",
+          "resourceName": "therastackauth",
+          "attributes": ["UserPoolId"]
+        }
+      ]
+    },
+    "messagesFunction": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "auth",
+          "resourceName": "therastackauth",
+          "attributes": ["UserPoolId"]
+        }
+      ]
+    }
+  }
+}

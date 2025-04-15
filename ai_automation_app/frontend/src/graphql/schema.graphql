@@ -1,0 +1,116 @@
+type User @model @auth(rules: [{allow: owner}, {allow: groups, groups: ["Admin"]}]) {
+  id: ID!
+  email: String!
+  name: String!
+  role: String!
+  metadata: AWSJSON
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Appointment @model @auth(rules: [{allow: owner}, {allow: groups, groups: ["Admin", "Doctor"]}]) {
+  id: ID!
+  patientId: ID!
+  doctorId: ID!
+  title: String!
+  description: String
+  startTime: AWSDateTime!
+  endTime: AWSDateTime!
+  status: String!
+  metadata: AWSJSON
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Document @model @auth(rules: [{allow: owner}, {allow: groups, groups: ["Admin", "Doctor"]}]) {
+  id: ID!
+  userId: ID!
+  name: String!
+  type: String!
+  docType: String!
+  s3Key: String!
+  status: String
+  metadata: AWSJSON
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Message @model @auth(rules: [{allow: owner}, {allow: groups, groups: ["Admin"]}]) {
+  id: ID!
+  conversationId: ID!
+  sender: ID!
+  recipient: ID!
+  content: String!
+  timestamp: AWSDateTime!
+  status: String!
+  metadata: AWSJSON
+}
+
+type Conversation @model @auth(rules: [{allow: owner}, {allow: groups, groups: ["Admin"]}]) {
+  id: ID!
+  participants: [ID!]!
+  lastMessage: String
+  lastMessageTime: AWSDateTime
+  status: String!
+  metadata: AWSJSON
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  messages: [Message] @connection(keyName: "byConversation", fields: ["id"])
+}
+
+type Query {
+  getAppointmentsByUser(userId: ID!, userType: String!, status: String): [Appointment]
+  getDocumentsByUser(userId: ID!, documentType: String): [Document]
+  getMessagesByConversation(conversationId: ID!): [Message]
+}
+
+type Mutation {
+  createAppointment(input: CreateAppointmentInput!): Appointment
+  updateAppointmentStatus(id: ID!, status: String!): Appointment
+  uploadDocument(input: UploadDocumentInput!): Document
+  sendMessage(input: SendMessageInput!): Message
+  createConversation(input: CreateConversationInput!): Conversation
+}
+
+input CreateAppointmentInput {
+  patientId: ID!
+  doctorId: ID!
+  title: String!
+  description: String
+  startTime: AWSDateTime!
+  endTime: AWSDateTime!
+  status: String
+  metadata: AWSJSON
+}
+
+input UploadDocumentInput {
+  userId: ID!
+  name: String!
+  type: String!
+  docType: String!
+  fileData: String!
+  status: String
+  metadata: AWSJSON
+}
+
+input SendMessageInput {
+  conversationId: ID!
+  sender: ID!
+  recipient: ID!
+  content: String!
+  status: String
+  metadata: AWSJSON
+}
+
+input CreateConversationInput {
+  participants: [ID!]!
+  status: String
+  metadata: AWSJSON
+}
+
+type Subscription {
+  onCreateMessage(conversationId: ID!): Message
+    @aws_subscribe(mutations: ["createMessage"])
+  onUpdateAppointment(id: ID!): Appointment
+    @aws_subscribe(mutations: ["updateAppointment"])
+}

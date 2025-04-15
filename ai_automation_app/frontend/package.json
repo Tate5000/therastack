@@ -1,0 +1,11 @@
+{
+  "name": "therastack",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd /mnt/c/Users/Tate/dev/Therastack/ai_automation_app/frontend && npm run dev",
+    "build": "cd /mnt/c/Users/Tate/dev/Therastack/ai_automation_app/frontend && npm run build",
+    "start": "cd /mnt/c/Users/Tate/dev/Therastack/ai_automation_app/frontend && npm run start",
+    "lint": "cd /mnt/c/Users/Tate/dev/Therastack/ai_automation_app/frontend && npm run lint"
+  }
+}

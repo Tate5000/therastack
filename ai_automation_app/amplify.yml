@@ -1,0 +1,72 @@
+version: 1
+backend:
+  phases:
+    preBuild:
+      commands:
+        - echo "Starting backend build at $(date)"
+        - cd backend
+        - python -m pip install --upgrade pip
+        - pip install -r requirements.txt
+    build:
+      commands:
+        - echo "Running backend tests"
+        - pytest -xvs --cov=services tests/
+        - echo "Backend build completed"
+  artifacts:
+    baseDirectory: backend
+    files:
+      - '**/*'
+    exclude:
+      - '__pycache__/**/*'
+      - '*.pyc'
+      - 'tests/**/*'
+  cache:
+    paths:
+      - backend/.pytest_cache/**/*
+      - backend/.coverage/**/*
+      - node_modules/**/*
+
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd frontend
+        - npm ci
+        - echo "Installing frontend dependencies"
+    build:
+      commands:
+        - echo "Building frontend"
+        - npm run build
+    postBuild:
+      commands:
+        - echo "Frontend build completed at $(date)"
+  artifacts:
+    baseDirectory: frontend/.next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - frontend/node_modules/**/*
+      - frontend/.next/cache/**/*
+
+customHeaders:
+  - pattern: '**/*'
+    headers:
+      - key: 'Strict-Transport-Security'
+        value: 'max-age=31536000; includeSubDomains'
+      - key: 'X-Content-Type-Options'
+        value: 'nosniff'
+      - key: 'X-XSS-Protection'
+        value: '1; mode=block'
+      - key: 'X-Frame-Options'
+        value: 'SAMEORIGIN'
+      - key: 'Content-Security-Policy'
+        value: "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://code.jquery.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.amazonaws.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+
+environmentVariables:
+  - name: NODE_ENV
+    value: production
+  - name: STAGE
+    value: prod
+  - name: AWS_REGION
+    value: us-east-2
